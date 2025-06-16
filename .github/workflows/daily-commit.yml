@@ -18,7 +18,7 @@ jobs:
         git config --global user.name 'AryamanBot'
         git config --global user.email 'itsaryaman23@gmail.com'
 
-        COMMITS=$(( ( RANDOM % 5 ) + 1 ))  # 1 to 5 random commits
+        COMMITS=$(( ( RANDOM % 15 ) + 1 ))  # 1 to 15 random commits
 
         for i in $(seq 1 $COMMITS); do
           echo "Commit $i on $(date)" >> activity.txt
