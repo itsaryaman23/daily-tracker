@@ -1,3 +1,38 @@
+# name: Daily Multi Commit
+
+# on:
+#   schedule:
+#     - cron: '0 5 * * *'
+#   workflow_dispatch:
+
+# jobs:
+#   auto-commit:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     - name: Checkout repo
+#       uses: actions/checkout@v3
+
+#     - name: Generate random commits
+#       run: |
+#         git config --global user.name 'AryamanBot'
+#         git config --global user.email 'itsaryaman23@gmail.com'
+
+#         COMMITS=$(( ( RANDOM % 15 ) + 1 ))  # 1 to 15 random commits
+
+#         for i in $(seq 1 $COMMITS); do
+#           echo "Commit $i on $(date)" >> activity.txt
+#           git add activity.txt
+#           git commit -m "chore: random commit $i"
+#         done
+
+#         git push
+
+
+
+
+
+# new code 
 name: Daily Multi Commit
 
 on:
@@ -10,20 +45,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
+      - name: Decide whether to skip today
+        id: skip_check
+        run: |
+          CHANCE=$(shuf -i 1-100 -n 1)
 
-    - name: Generate random commits
-      run: |
-        git config --global user.name 'AryamanBot'
-        git config --global user.email 'itsaryaman23@gmail.com'
+          echo "Random number: $CHANCE"
 
-        COMMITS=$(( ( RANDOM % 15 ) + 1 ))  # 1 to 15 random commits
+          # 50% chance to skip
+          if [ "$CHANCE" -le 50 ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Skipping commits today."
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "Proceeding with commits."
+          fi
 
-        for i in $(seq 1 $COMMITS); do
-          echo "Commit $i on $(date)" >> activity.txt
-          git add activity.txt
-          git commit -m "chore: random commit $i"
-        done
+      - name: Checkout repo
+        if: steps.skip_check.outputs.skip == 'false'
+        uses: actions/checkout@v3
 
-        git push
+      - name: Generate random commits
+        if: steps.skip_check.outputs.skip == 'false'
+        run: |
+          git config --global user.name 'AryamanBot'
+          git config --global user.email 'itsaryaman23@gmail.com'
+
+          # Random number of commits: 1-15
+          COMMITS=$(( ( RANDOM % 15 ) + 1 ))
+
+          echo "Creating $COMMITS commits"
+
+          for i in $(seq 1 $COMMITS); do
+            echo "Commit $i on $(date)" >> activity.txt
+            git add activity.txt
+            git commit -m "chore: random commit $i"
+          done
+
+          git push
